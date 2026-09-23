@@ -1,0 +1,144 @@
+Running Map tests
+Test inserting into empty tree
+100/100 test(s) passed.
+Test inserting two values with same key
+100/100 test(s) passed.
+Test insertWith combining values
+100/100 test(s) passed.
+Test insertWith passes the first value as the first argument to the combining function
+100/100 test(s) passed.
+Test delete after inserting
+100/100 test(s) passed.
+Test pop after inserting
+100/100 test(s) passed.
+Pop non-existent key
+100/100 test(s) passed.
+Insert two, lookup first
+100/100 test(s) passed.
+Insert two, lookup second
+100/100 test(s) passed.
+Insert two, delete one
+100/100 test(s) passed.
+Check balance property
+1000/1000 test(s) passed.
+Lookup from empty
+100/100 test(s) passed.
+Lookup from singleton
+100/100 test(s) passed.
+Random lookup
+1000/1000 test(s) passed.
+Singleton to list
+100/100 test(s) passed.
+fromFoldable [] = empty
+100/100 test(s) passed.
+fromFoldable & key collision
+100/100 test(s) passed.
+100/100 test(s) passed.
+100/100 test(s) passed.
+fromFoldableWith const [] = empty
+100/100 test(s) passed.
+fromFoldableWith (+) & key collision
+100/100 test(s) passed.
+100/100 test(s) passed.
+100/100 test(s) passed.
+sort . toUnfoldable . fromFoldable = sort (on lists without key-duplicates)
+100/100 test(s) passed.
+fromFoldable . toUnfoldable = id
+100/100 test(s) passed.
+fromFoldableWith const = fromFoldable
+100/100 test(s) passed.
+fromFoldableWith (<>) = fromFoldable . collapse with (<>) . group on fst
+100/100 test(s) passed.
+toUnfoldable is sorted
+100/100 test(s) passed.
+Lookup from union
+100/100 test(s) passed.
+Union is idempotent
+100/100 test(s) passed.
+Union prefers left
+100/100 test(s) passed.
+unionWith
+100/100 test(s) passed.
+100/100 test(s) passed.
+unionWith argument order
+100/100 test(s) passed.
+Lookup from intersection
+100/100 test(s) passed.
+Intersection is idempotent
+100/100 test(s) passed.
+intersectionWith
+100/100 test(s) passed.
+100/100 test(s) passed.
+map-apply is equivalent to intersectionWith
+100/100 test(s) passed.
+100/100 test(s) passed.
+difference
+100/100 test(s) passed.
+size
+100/100 test(s) passed.
+lookupLE result is correct
+100/100 test(s) passed.
+lookupGE result is correct
+100/100 test(s) passed.
+lookupLT result is correct
+100/100 test(s) passed.
+lookupGT result is correct
+100/100 test(s) passed.
+findMin result is correct
+100/100 test(s) passed.
+findMax result is correct
+100/100 test(s) passed.
+mapWithKey is correct
+100/100 test(s) passed.
+filterWithKey gives submap
+100/100 test(s) passed.
+filterWithKey keeps those keys for which predicate is true
+100/100 test(s) passed.
+filterKeys gives submap
+100/100 test(s) passed.
+filterKeys keeps those keys for which predicate is true
+100/100 test(s) passed.
+filter gives submap
+100/100 test(s) passed.
+filter keeps those values for which predicate is true
+100/100 test(s) passed.
+submap with no bounds = id
+100/100 test(s) passed.
+submap with lower bound
+1/1 test(s) passed.
+submap with upper bound
+1/1 test(s) passed.
+submap with lower & upper bound
+1/1 test(s) passed.
+submap
+1000/1000 test(s) passed.
+foldrWithIndex maintains order
+100/100 test(s) passed.
+bind
+100/100 test(s) passed.
+catMaybes creates a new map of size less than or equal to the original
+100/100 test(s) passed.
+catMaybes drops key/value pairs with Nothing values
+100/100 test(s) passed.
+SemigroupMap's Semigroup instance is based on value's Semigroup instance
+100/100 test(s) passed.
+100/100 test(s) passed.
+100/100 test(s) passed.
+SemigroupMap's Semigroup instance is based on value's Semigroup instance
+100/100 test(s) passed.
+100/100 test(s) passed.
+100/100 test(s) passed.
+any
+100/100 test(s) passed.
+any with empty map
+anyWithKey
+100/100 test(s) passed.
+anyWithKey with empty map
+Running Set tests
+fromFoldable - empty
+fromFoldable - non empty
+intersection
+catMaybes - drops Nothing values
+toggle - inserts item
+toggle - deletes item
+range
