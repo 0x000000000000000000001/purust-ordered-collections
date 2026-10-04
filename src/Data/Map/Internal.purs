@@ -459,32 +459,68 @@ member k = go
         GT -> go mr
         EQ -> true
 
--- | Insert or replace a key/value pair in a map
-insert :: forall k v. Ord k => k -> v -> Map k v -> Map k v
-insert k v = go
+-- | Oracle implementation of `insert`, kept for the JS host and for the
+-- | differential fixture. The Rust backend is served by `insertImpl`, which
+-- | receives this function and ignores it.
+insertPS :: forall k v. (k -> k -> Ordering) -> k -> v -> Map k v -> Map k v
+insertPS comp k v = go
   where
   go = case _ of
     Leaf -> singleton k v
     Node mh ms mk mv ml mr ->
-      case compare k mk of
+      case comp k mk of
         LT -> runFn4 unsafeBalancedNode mk mv (go ml) mr
         GT -> runFn4 unsafeBalancedNode mk mv ml (go mr)
         EQ -> Node mh ms k v ml mr
+
+-- | Native Rust `insert` with an explicit comparator. The oracle is the first
+-- | argument so the JS FFI lane can delegate to `insertPS` without an import
+-- | cycle; the Rust lane reuses the comparator callback, rebuilds only the path
+-- | and keeps the AVL balancing invariant.
+foreign import insertImpl
+  :: forall k v
+   . ((k -> k -> Ordering) -> k -> v -> Map k v -> Map k v)
+  -> (k -> k -> Ordering)
+  -> k
+  -> v
+  -> Map k v
+  -> Map k v
+
+-- | Insert or replace a key/value pair in a map
+insert :: forall k v. Ord k => k -> v -> Map k v -> Map k v
+insert k v m = insertImpl insertPS compare k v m
+
+-- | Oracle implementation of `insertWith` (the combining function receives the
+-- | existing value first), kept for the JS host and the differential fixture.
+insertWithPS :: forall k v. (k -> k -> Ordering) -> (v -> v -> v) -> k -> v -> Map k v -> Map k v
+insertWithPS comp app k v = go
+  where
+  go = case _ of
+    Leaf -> singleton k v
+    Node mh ms mk mv ml mr ->
+      case comp k mk of
+        LT -> runFn4 unsafeBalancedNode mk mv (go ml) mr
+        GT -> runFn4 unsafeBalancedNode mk mv ml (go mr)
+        EQ -> Node mh ms k (app mv v) ml mr
+
+-- | Native Rust `insertWith` with an explicit comparator; same oracle-passing
+-- | contract as `insertImpl`.
+foreign import insertWithImpl
+  :: forall k v
+   . ((k -> k -> Ordering) -> (v -> v -> v) -> k -> v -> Map k v -> Map k v)
+  -> (k -> k -> Ordering)
+  -> (v -> v -> v)
+  -> k
+  -> v
+  -> Map k v
+  -> Map k v
 
 -- | Inserts or updates a value with the given function.
 -- |
 -- | The combining function is called with the existing value as the first
 -- | argument and the new value as the second argument.
 insertWith :: forall k v. Ord k => (v -> v -> v) -> k -> v -> Map k v -> Map k v
-insertWith app k v = go
-  where
-  go = case _ of
-    Leaf -> singleton k v
-    Node mh ms mk mv ml mr ->
-      case compare k mk of
-        LT -> runFn4 unsafeBalancedNode mk mv (go ml) mr
-        GT -> runFn4 unsafeBalancedNode mk mv ml (go mr)
-        EQ -> Node mh ms k (app mv v) ml mr
+insertWith app k v m = insertWithImpl insertWithPS compare app k v m
 
 -- | Delete a key and its corresponding value from a map.
 delete :: forall k v. Ord k => k -> Map k v -> Map k v
@@ -570,10 +606,26 @@ keys = foldrWithIndex (\k _ acc -> k : acc) Nil
 values :: forall k v. Map k v -> List v
 values = foldr Cons Nil
 
+-- | Oracle implementation of `unionWith`, kept for the JS host and the
+-- | differential fixture.
+unionWithPS :: forall k v. (k -> k -> Ordering) -> (v -> v -> v) -> Map k v -> Map k v -> Map k v
+unionWithPS comp app = runFn4 unsafeUnionWith comp app
+
+-- | Native Rust `unionWith` with an explicit comparator; same oracle-passing
+-- | contract as `insertImpl`, with `unsafeUnionWith`'s split/balance order.
+foreign import unionWithImpl
+  :: forall k v
+   . ((k -> k -> Ordering) -> (v -> v -> v) -> Map k v -> Map k v -> Map k v)
+  -> (k -> k -> Ordering)
+  -> (v -> v -> v)
+  -> Map k v
+  -> Map k v
+  -> Map k v
+
 -- | Compute the union of two maps, using the specified function
 -- | to combine values for duplicate keys.
 unionWith :: forall k v. Ord k => (v -> v -> v) -> Map k v -> Map k v -> Map k v
-unionWith app m1 m2 = runFn4 unsafeUnionWith compare app m1 m2
+unionWith app m1 m2 = unionWithImpl unionWithPS compare app m1 m2
 
 -- | Compute the union of two maps, preferring values from the first map in the case
 -- | of duplicate keys
